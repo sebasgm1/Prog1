@@ -1,34 +1,18 @@
-/* 
- * Tipos Abstratos de Dados - TADs
- * Arquivo de implementação para TAD racional.
- * Feito em 20/09/2024 para a disciplina CI1001 - Programação 1.
- *
- * Este arquivo deve conter as implementações das funções cujos protótipos
- * foram definidos em racional.h. Neste arquivo também podem ser definidas
- * funções auxiliares para facilitar a implementação daquelas funções.
-*/
-
-/* coloque aqui seus includes (primeiro os <...>, depois os "...") */
 #include <stdio.h>
 #include <stdlib.h>
 #include "racional.h"
 
-
-/*
- * Implemente aqui as funcoes definidas no racionais.h; caso precise,
- * pode definir aqui funcoes auxiliares adicionais, que devem ser usadas
- * somente neste arquivo.
-*/
-
 int valido_r (struct racional r) {
-  return r.den != 0; /* quer dizer se for diferente de 0, return 1, else return 0*/
+  return (r.den != 0); /* quer dizer se for diferente de 0, return 1, else return 0 */
 }
 
-long absoluto (long x) { /* é equivente a funcao abs, porém funciona para tipos LONG e nao apenas INT */
+
+long absoluto (long x) { /* funçao abs que funciona para tipos LONG e nao apenas INT */
   if (x<0)
     x = -x;
   return x;
 }
+
 
 long mdc (long a, long b) /* funciona tanto para (a>b) ou (a<b) ou (a<0 e b<0) */
 {
@@ -42,50 +26,45 @@ long mdc (long a, long b) /* funciona tanto para (a>b) ou (a<b) ou (a<0 e b<0) *
   return a;
   }
 
+
 struct racional simplifica_r (struct racional r)
-{
-  int divisor;
-  int a = r.num;
-  int b = r.den;
-
-  divisor = mdc (a, b);
-
+{  
   if (!valido_r (r))
     return r;
+  
+  long divisor = mdc (r.num, r.den);
 
-  if (b<0) { /* se apenas o DEN for NEGATIVO, já abrangindo o caso do NUM e DEN serem ambos negativos */  
-    r.num = -1* r.num / divisor; /* inverte o sinal do numerador e simplifica */
-    r.den = -1* r.den / divisor; /* inverte o sinal do denominador e simplifica */
+  if (r.den<0) { /* se apenas o DEN for NEGATIVO, já abrangindo o caso do NUM e DEN serem ambos negativos */  
+    r.num = -1* r.num / divisor;
+    r.den = -1* r.den / divisor;
 
     return r;
   }
-
   /* se chegou até aqui, é por que NUM é negativo ou tanto NUM como DEN são positivos */
   r.num /= divisor;
   r.den /= divisor;
+
   return r;
 }
 
-struct racional cria_r (long numerador, long denominador) { /* serve como uma funçao intermediária que armazena o valores do numerador e denominador na struct, muito útil */
+
+struct racional cria_r (long numerador, long denominador) {
   struct racional r;
-  r.den = denominador;
   r.num = numerador;
+  r.den = denominador;
+
   return simplifica_r(r);
 }
 
-/* retorna um número aleatório entre min e max, inclusive. */
-long aleat (long min, long max)
-{
+
+long aleat (long min, long max) {
   return min + rand () % (max - min +1);
 }
 
-/* Mínimo Múltiplo Comum entre a e b */
-/* mmc = (a * b) / mdc (a, b)        */
-long mmc (long a, long b)
-{
+
+long mmc (long a, long b) {
   return (a*b) / mdc (a, b);
 }
-
 
 
 struct racional sorteia_r (long min, long max) { /* usando a funçao aleat, ele junta um númerador aleatório e um denominador aletório na mesma struct (usando a cria_r) */
@@ -95,40 +74,35 @@ struct racional sorteia_r (long min, long max) { /* usando a funçao aleat, ele 
   return cria_r(numerador, denominador); /* sempre vai retornar simplificado */
 }
 
-void imprime_r (struct racional r) {
-  long numerador = r.num;
-  long denominador = r.den;
 
-  if (!valido_r (r)) { /* se o valor for inválido, imprime INVALIDO e já retorna, saindo da função */
+void imprime_r (struct racional r) {
+  if (!valido_r (r)) {
       printf ("NaN ");
       return;
   }
-
-  else if (numerador == 0) /* se o numerador for 0, só printa 0*/
-    printf ("0 ");
+  r = simplifica_r (r);
   
-  else if (denominador == 1) /* se o denominador for 1, só printa o numerador */
-    printf ("%ld ", numerador);
+  if (r.den == 1 || r.num == 0) {/* se o num for 0, se o den for 1, se o num = den, vai fincionar */
+    printf ("%ld ", r.num);
+    return;
+  }
 
-  else if (numerador == denominador) /* se o numerador e o denominador forem iguais, apenas printa 1 */
-    printf ("1 ");
-  
-  else if (denominador<0) /* vale tanto para den<0, como para num<0 e den<0. isso para corrigir o sinal */
+  if (r.den<0) /* vale tanto para den<0, como para num<0 e den<0. isso para corrigir o sinal */
     printf ("%ld/%ld ", (-1 * r.num), (-1 * r.den));
   else {
     /* caso o denominador seja positivo, imprime do jeito que veio, não precisa mudar nada */
     printf ("%ld/%ld ", r.num, r.den);
   }
+  return;
 }
 
-/* Compara dois racionais r1 e r2. Retorno: -2 se r1 ou r2 for inválido,
- * -1 se r1 < r2, 0 se r1 = r2 ou 1 se r1 > r2 */
+
 int compara_r (struct racional r1, struct racional r2) {
   if (!valido_r(r1) || !valido_r(r2))
     return -2;
 
-  long a = r1.num * r2.den; /* primeira struct */
-  long b = r1.den * r2.num; /* segunda struct */
+  long a = r1.num * r2.den;
+  long b = r1.den * r2.num;
 
   if (a<b)
     return -1;
@@ -139,8 +113,9 @@ int compara_r (struct racional r1, struct racional r2) {
   if (a>b)
     return 1;
   
-  return 7; // se retornar 7 é por que deu tudo errado
+  return 7; /* se retornar 7 é por que deu tudo errado */
 }
+
 
 int soma_r (struct racional r1, struct racional r2, struct racional *r3){
   if (!valido_r(r1) || !valido_r (r2))
@@ -153,7 +128,58 @@ int soma_r (struct racional r1, struct racional r2, struct racional *r3){
   r3->num = a+b;
   r3->den = divisor;
 
-  // simplificar o resultado
+  *r3 = simplifica_r(*r3);
+
+  if (r3->num == 0)
+    return 0;
+
+  return 1;
+}
+
+
+int subtrai_r (struct racional r1, struct racional r2, struct racional *r3) {
+  if (!valido_r(r1) || !valido_r (r2))
+    return 0;
+  
+  long divisor = mmc (r1.den, r2.den);
+  long a = (divisor/r1.den)*r1.num;
+  long b = (divisor/r2.den)*r2.num;
+
+  r3->num = a-b;
+  r3->den = divisor;
+
+  *r3 = simplifica_r(*r3);
+
+  if (r3->num == 0)
+    return 0;
+
+  return 1;
+}
+
+
+int multiplica_r (struct racional r1, struct racional r2, struct racional *r3) {
+  if (!valido_r(r1) || !valido_r (r2))
+    return 0;
+
+  r3->num = r1.num*r2.num;
+  r3->den = r1.den*r2.den;
+
+  *r3 = simplifica_r(*r3);
+
+  if (r3->num == 0)
+    return 0;
+
+  return 1;
+}
+
+
+int divide_r (struct racional r1, struct racional r2, struct racional *r3) {
+  if (!valido_r(r1) || !valido_r (r2))
+    return 0;
+
+  r3->num = r1.num*r2.den;
+  r3->den = r1.den*r2.num;
+
   *r3 = simplifica_r(*r3);
 
   if (r3->num == 0)
