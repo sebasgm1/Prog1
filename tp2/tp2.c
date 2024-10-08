@@ -1,3 +1,12 @@
+/* 
+
+  Este arquivo lê números reais com fração em um vetor de structs de reais
+  Verifĩca se os valores inseridos são válidos ou inválidos e retira os valores inválidos
+  Ordena o vetor
+  Mostra a soma de todas as frações
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "racional.h"
