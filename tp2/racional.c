@@ -1,3 +1,10 @@
+/* 
+
+  Este arquivo contém as imprementaçôes das funções descritas no racional.h. 
+  Junto a outras funçoes auxiliares criadas para a implementação ficar mais intuitiva.
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "racional.h"
