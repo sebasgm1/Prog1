@@ -24,8 +24,7 @@
  * A memória para o número racional deve ser alocada dinamicamente
  * por esta função. Retorna NULL se não conseguiu alocar a memória. */
 struct racional *cria_r (long numerador, long denominador) {
-  struct racional *r;
-  r = malloc (sizeof (struct racional));
+  struct racional *r = malloc (sizeof (struct racional));
 
   if (r == NULL) {
     printf ("cria_r -> nao pôde alocar memória\n");
