@@ -81,7 +81,7 @@ int fprio_insere (struct fprio_t *f, void *item, int tipo, int prio) {
   // verifica se nao tem nenhum ponteiro igual ao que será inserido
   for (int i=0; i<f->num; i++) {
     if (item == atual->item) {
-      free(nodo);
+
       return -1;
     }      
     atual = atual->prox;
