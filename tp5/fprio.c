@@ -1,9 +1,11 @@
-// TAD Fila de prioridades (FPRIO) genérica
-// Carlos Maziero, DINF/UFPR, Out 2024
-// Implementação com lista encadeada simples
-
-// A COMPLETAR
-#include <stdio.h>
+/*
+    Este arquivo tem a implementação de todas as funções
+    do arquivo fprio.h.
+    Cada função tem a legenda da sua atuação e outros comentários
+    adicionais considerados pertinentes para entender o funcionamento da mesma.
+    (Esse comentário aqui foi 10, vai dizer prof :D)
+*/
+#include <stdio.h>  
 #include <stdlib.h>
 #include "fprio.h"
 
@@ -29,13 +31,6 @@ struct fprio_t *fprio_destroi (struct fprio_t *f) {
   
   struct fpnodo_t *atual = f->prim;
   struct fpnodo_t *ante;
-
-  // for (int i=0; i<f->num-1; i++) {        // -1 pois começamos do 0 e sempre pegamos o próximo
-  //   free (atual->item);
-  //   ante = atual;
-  //   atual = atual->prox;
-  //   free (ante);
-  // }
 
   while (atual != NULL) {
     if (atual->item != NULL)
@@ -81,20 +76,19 @@ int fprio_insere (struct fprio_t *f, void *item, int tipo, int prio) {
   // verifica se nao tem nenhum ponteiro igual ao que será inserido
   for (int i=0; i<f->num; i++) {
     if (item == atual->item) {
-
+      free (nodo);
       return -1;
     }      
     atual = atual->prox;
   }
 
-  // começa da segunda posição pois a primeira já foi testada
   atual = f->prim;
   struct fpnodo_t *ante = NULL;
 
   // verifica em que posição ele deve estar e insere ele
   while (atual != NULL && prio >= atual->prio) {
     ante = atual;
-    atual = atual->prox;        // se chegar no final da lista, atual vai ser NULL
+    atual = atual->prox;            // se chegar no final da lista, atual vai ser NULL
   }
 
   // atual vai ser NULL quando chegar no fim da fila
@@ -138,7 +132,6 @@ void *fprio_retira (struct fprio_t *f, int *tipo, int *prio) {
   free (primeiro);
 
   f->num --;
-  
   return item;
 }
 
@@ -149,7 +142,7 @@ int fprio_tamanho (struct fprio_t *f) {
   if (f == NULL)
     return -1;
 
-  if (f->num < 0) {       // nao é necessárioa, mas vai que
+  if (f->num < 0) {
     printf ("fprio_tamanho: tamanho de fila negativo\n");
     return -1;
   } 
@@ -167,11 +160,6 @@ void fprio_imprime (struct fprio_t *f) {
 
   printf ("(%d %d)", f->prim->tipo, f->prim->prio);
   struct fpnodo_t *atual = f->prim;
-
-  // for (int i = 1; i<f->num; i++) {
-  //   atual = atual->prox;
-  //   printf (" (%d %d)", atual->tipo, atual->prio);
-  // }
 
   while (atual->prox != NULL) {
     atual = atual->prox;
