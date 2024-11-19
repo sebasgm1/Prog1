@@ -4,69 +4,167 @@
 
 #include "entidades.h"
 #include "conjunto.h"
+#include "lista.h"
+#include "fprio.h"
 
 
+#define T_INICIO 0
+#define T_FIM_DO_MUNDO 524600
+#define N_TAMANHO_MUNDO 20000
+#define N_HABILIDADES 10
+#define N_HEROIS 50
+#define N_BASES 10
+#define N_MISSOES 5246
+
+
+int aleat (int min, int max){
+  return  min + (rand() % max-min+1);
+}
 
 // Cria o mundo e inicializa todas suas variáveis
 // Retorna 1 se der certo, 0 em caso de erro
-int cria_mundo (struct mundo *p, int ti, int tf, int tam, int ha, int he, int b,int m) {
-  struct mundo *mundo = malloc (sizeof (struct mundo));
+int cria_mundo (struct mundo_t *p, int ti, int tf, int tam, int ha, int he, int b,int m) {
+  struct mundo_t *mundo = malloc (sizeof (struct mundo_t));
   if (mundo == NULL)
     return 0;
   
   p = mundo;
   
-  mundo->t_inicial = ti;      // 0;
-  mundo->t_final = tf;        // 524600;
-  mundo->tam_mundo = tam;     // 20000;
-  mundo->hab = ha;            // 10;
-  mundo->herois = he;         // 50;
-  mundo->bases = b;           // 10;
-  mundo->missoes = m;         // 5256;
+  mundo->t_inicial = ti;          // 0;
+  mundo->t_final = tf;            // 524600;
+  mundo->tam_mundo = tam;         // 20000;
+  mundo->hab = ha;                // 10;
+  mundo->herois = he;             // 50;
+  // cria_heroi (mundo);                    // TEM QUE ARRUMAR ESSA FUNÇÃO
+
+
+  mundo->bases = b;               // 10;
+  if (cria_base(mundo))
+    printf ("Criou a base!\n");
+  else
+    printf ("ERRO: Não criou a base\n");
+  
+
+  mundo->missoes = m;             // 5256;
+  if (cria_missoes (mundo))
+    printf ("Criou todas as missões!\n"):
+  else
+    printf ("ERRO: Não criou alguma missão");
+  
   return 1;
+}
+
+struct cjto_t *cria_hab () {
+  int hab = 0;
+
+  struct cjto_t *habilidades = cjto_cria (10);      
+  if (habilidades == NULL)
+    return NULL;
+
+
+  int num_hab = aleat (1, 3);
+
+  for (int i=0; i<num_hab; i++) {
+    hab = aleat (0, 9);
+
+    while (cjto_pertence (habilidades, hab))       // Já pertence? então acha outro valor
+      hab = aleat (0, 9);
+
+    cjto_insere (habilidades, hab);
+  }
+
+  return habilidades;
 }
 
 
 // Cria um herói só e inicializa todas suas variáveis
 // Retorna 1 se der certo, 0 em caso de erro
-int cria_heroi (struct heroi *p, int id) {
-  struct heroi *heroi = malloc (sizeof (struct heroi));
-  if (heroi == NULL)
-    return 0;
+int cria_herois (struct mundo_t *mundo, int he) {
+  for (int id=0; id<he-1; id++) {
+    mundo->vherois[id].id = id;
+    mundo->vherois[id].xp = 0;
+    mundo->vherois[id].paciencia = aleat (0, 100);
+    mundo->vherois[id].vel = aleat (50, 5000);
+
+    mundo->vherois[id].hab = cjto_aleat (3, 10);
+    if (mundo->vherois[id].hab == NULL)
+      return 0;
   
-  p = heroi;
-
-  heroi->id = id;
-  heroi->xp = 0;
-  heroi->paciencia = rand() % 101;
-  heroi->vel = 50 + (rand() % 5000-50+1); // vai encontrar um número ente 50 e 5000
-
-  int num_habilidades = 1 + (rand() % 3);
-  heroi->hab = cjto_cria (num_habilidades);   // TA ERRADO ISSO AQUI, tenho que criar as habilidades 
-
-  for (int i=0; i<num_habilidades) {
-    int hab_sorteada = rand() % 10;
-    while (cjto_pertence(heroi->hab->flag, hab_sorteada)) {  // pertence?, se sim, sorteia um novo
-      int hab_sorteada = rand() % 10;
-    }
-    
-    cjto_insere (heroi->hab->flag, hab_sorteada);    // As habilidades vao ser sorteadas de 1 a 10
   }
-
   return 1;
 }
 // a capacidade do conjunto é 10 (0 a 9) e a cardinalidade deve ser no maximo 3
 
 
+// Função que vai cria uma base e preencher seus campos aleatoriamente
+// Retorna o 1 se deu certo, em caso de erro retorna 0
+int cria_base (struct mundo_t *mundo) {
+  for (int id = 0; id<mundo->bases; id++) {
+    mundo->vbases[id].id = id;
+    mundo->vbases[id].lot = aleat (3, 10);
+
+    struct cjto_t *present = malloc (sizeof (struct cjto_t));
+    if (present == NULL) {
+      return 0;
+    }
+    mundo->vbases[id].presentes = present;
+
+    struct fprio *fila_p = malloc (sizeof (struct fprio_t));
+    if (fila_p == NULL) {
+      free (mundo->vbases[id].presentes);
+      return 0;
+    }
+    mundo->vbases[id].espera = fila_p;
+
+    mundo->vbases[id].local [0] = aleat (0, 20000);
+    mundo->vbases[id].local [1] = aleat (0, 20000);
+  }
+
+  return 1;
+}
+
+
+// Cria todas as missões
+// Se der boa, retorna 1, deu ruim, retorna 0
+int cria_missoes (struct mundo_t *mundo) {
+  int cap = 0;
+
+  for (int id=0; id<T_FIM_DO_MUNDO / 100; id++) {
+    mundo->vmissoes[id].id = id;
+    mundo->vmissoes[id].local[0] = aleat (0, N_TAMANHO_MUNDO-1);
+    mundo->vmissoes[id].local[1] = aleat (0, N_TAMANHO_MUNDO-1);
+
+    cap = aleat (6, 10);
+    mundo->vmissoes[id].hab = cjto_aleat (aleat (0, cap-1), cap);
+    if (mundo->vmissoes[id].hab == NULL) {
+      printf ("Não criou o conjunto da missão %d\n", id);
+      return 0;
+    }
+    
+    mundo->vmissoes[id].perigo = aleat (0, 100);
+  }
+  return 1;
+}
+
+
+
+
 // serve só pra testar tudo foi feito
-void cria_tudo () {
+int main () {
   srand(0);
 
+  // Inicializa variaveis auxiliares pra criar o heroi
+    int paci = 0;
+    int vel = 0;
+    int xp = 0;
+    struct cjto_t *habilidades = NULL;
+
+
   // Incializa os ponteiros de cada TAD
-  struct mundo *mundo;
-  struct heroi *heroi;
-  struct base *base;
-  struct missao *missao;
+  struct mundo_t *mundo = NULL;
+  // struct base_t *base;
+  // struct missao *missao;
+
 
   // inicializa os valores do mundo, pra testar mesmo
   int t_inicial = 0;
@@ -77,25 +175,16 @@ void cria_tudo () {
   int n_bases = 10;
   int n_missoes = 5256;
 
+
   // Aloca dinamincamente cada um deles
-  if (cria_mundo(mundo, t_inicial, t_final, tam_mundo, n_habilidades, n_herois, n_bases, n_missoes))
-    printf ("Criou o mundo\n");
+  if (cria_mundo(&mundo, t_inicial, t_final, tam_mundo, n_habilidades, n_herois, n_bases, n_missoes))
+    printf ("Criou o mundo!\n");
   else
-    printf ("ERRO ao criar o mundo\n");
-
-
-  // cria 50 heróis, cada um com seu ID
-  for (int i = 0; i<50; i++) {
-    if (cria_heroi(heroi, i))
-      printf ("Criou o Heroi %d!\n", i);
-    else
-      printf ("ERRO ao criar o Herói %d!\n", i);
-  }
-
+    printf ("ERRO -> cria_tudo: ao criar o mundo\n");
 
   
 
-
+  return 0;
 }
 
 
@@ -129,7 +218,7 @@ void cria_tudo () {
   //      int id ;			          // id do herói
   //      struct item_t *ant ;		// item anterior
   //      struct item_t *prox ;	  // próximo item
-  //      struct heroi *pheroi;   // ponteiro pro heroi
+  //      struct heroi_t *pheroi;   // ponteiro pro heroi
   //     } ;
   //
   //      Nesse caso pra apontar pra struct herói definida no entidades.h

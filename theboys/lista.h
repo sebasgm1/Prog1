@@ -2,24 +2,45 @@
 // Carlos Maziero - DINF/UFPR, Out 2024
 //
 // Definição da interface do TAD - NÃO ALTERAR
+#include "entidades.h"
+#include "conjunto.h"
 
 #ifndef LISTA
 #define LISTA
 
-// estrutura de um item da lista
+
+// // estrutura de um item da lista
+// struct item_t
+// {
+//   int valor ;               // seria o ID do herói
+//   struct heroi_t *heroi ;		// o que ele armazena, no caso o ponteiro pro herói
+//   struct item_t *ant ;		  // item anterior
+//   struct item_t *prox ;	    // próximo item
+// } ;
+
+
+
+
+// estrutura de um heroi da lista
 struct item_t
 {
-  int valor ;			// valor do item
-  struct item_t *ant ;		// item anterior
-  struct item_t *prox ;	// próximo item
+  struct item_t *ant ;		  // item anterior
+  struct item_t *prox ;	    // próximo item
+  bool vivo;
+  int id;                   // ID do herói e valor do NODO (pra colocar na posição certa)
+  int xp;
+  int paciencia;
+  int vel;
+  struct cjto_t *hab;
 } ;
 
 // estrutura de uma lista
 struct lista_t
 {
-  struct item_t *prim ;	// primeiro item
+  struct item_t *prim ;	  // primeiro item
   struct item_t *ult ;		// último item
-  int tamanho ;		// número de itens da lista
+  int tamanho ;		        // número de herois da lista
+  int n_vivos ;           // numero de herois vivos na lista
 } ;
 
 // Cria uma lista vazia.
@@ -36,17 +57,17 @@ struct lista_t *lista_destroi (struct lista_t *lst);
 // Insere o item na lista na posição indicada;
 // se a posição for além do fim da lista ou for -1, insere no fim.
 // Retorno: número de itens na lista após a operação ou -1 em erro.
-int lista_insere (struct lista_t *lst, int item, int pos);
+int cria_heroi (struct lista_t *lst, int pos, int xp, int paci, int vel, struct cjto_t *habilidades);
 
 // Retira o item da lista da posição indicada.
 // se a posição for -1, retira do fim.
 // Retorno: número de itens na lista após a operação ou -1 em erro.
-int lista_retira (struct lista_t *lst, int *item, int pos);
+int mata_heroi (struct lista_t *lst, int *item, int pos);
 
 // Informa o valor do item na posição indicada, sem retirá-lo.
 // se a posição for -1, consulta do fim.
 // Retorno: número de itens na lista ou -1 em erro.
-int lista_consulta (struct lista_t *lst, int *item, int pos);
+int lista_consulta (struct lista_t *lst, bool *vivo, int pos);
 
 // Informa a posição da 1ª ocorrência do valor indicado na lista.
 // Retorno: posição do valor ou -1 se não encontrar ou erro.

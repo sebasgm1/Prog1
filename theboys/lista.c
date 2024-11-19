@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lista.h"
+#include "entidades.h"
+#include <stdbool.h>
 
 // Cria uma lista vazia.
 // Retorno: ponteiro p/ a lista ou NULL em erro.
@@ -21,6 +23,7 @@ struct lista_t *lista_cria () {
   lista->prim = NULL;
   lista->ult = NULL;
   lista->tamanho = 0;
+  lista->n_vivos = 0;
 
   return lista;
 }
@@ -48,7 +51,7 @@ struct lista_t *lista_destroi (struct lista_t *lst) {
 // Insere o item na lista na posição indicada;
 // se a posição for além do fim da lista ou for -1, insere no fim.
 // Retorno: número de itens na lista após a operação ou -1 em erro.
-int lista_insere (struct lista_t *lst, int item, int pos) {
+int cria_heroi (struct lista_t *lst, int pos, int xp, int paci, int vel, struct cjto_t *habilidades) {  
   if (lst == NULL)
     return -1;
   
@@ -56,9 +59,17 @@ int lista_insere (struct lista_t *lst, int item, int pos) {
   if (novo == NULL)
     return -1;
 
-  novo->valor = item;
+  lst->n_vivos ++;
+
   novo->ant = NULL;
   novo->prox = NULL;
+  novo->vivo = true;
+  novo->id = pos;
+  novo->xp = xp;
+  novo->paciencia = paci;
+  novo->vel = vel;
+  novo->hab = habilidades;
+
   
   if (pos>lst->tamanho-1 || pos<0) {
     if (lst->tamanho == 0) {
@@ -96,62 +107,45 @@ int lista_insere (struct lista_t *lst, int item, int pos) {
 
 // Retira o item da lista da posição indicada.
 // se a posição for além do fim da lista ou for -1, retira do fim.
-// Retorno: número de itens na lista após a operação ou -1 em erro.
-int lista_retira (struct lista_t *lst, int *item, int pos) {
+// Retorno: qual heroi morreu ou -1 em erro.
+int mata_heroi (struct lista_t *lst, int *item, int pos) {
   if (lst == NULL || lst->tamanho<1)
     return -1;
   
   struct item_t *aux;
+  lst->n_vivos --;        // se passou do teste, já morreu, pode decementar
 
   // caso em que pos passa o tamanho da lista ou pos<0
   if ((pos>lst->tamanho-1 || pos<0) && lst->tamanho>1) {
-    *item = lst->ult->valor;
-    lst->ult->ant->prox = NULL;   // vai no antepenúltimo item e dá NULL no ponteiro prox dele
+    lst->ult->vivo = false;
 
-    aux = lst->ult->ant;
-
-    free (lst->ult);
-    lst->ult = aux;
-
-    lst->tamanho --;
-    return lst->tamanho;
+    return lst->ult->id;
   }
 
   // caso em que a lista tem apenas um item
   if ((lst->tamanho == 1) && (pos <= 0 || pos>lst->tamanho-1)) {
-    *item = lst->prim->valor;
+    *item = lst->prim->id;
+    lst->prim->vivo = false;
 
-    free (lst->prim);
-    lst->prim = NULL;
-    lst->ult = NULL;
-
-    lst->tamanho --;
-    return lst->tamanho;
+    lst->n_vivos --;
+    return item;
   }
 
    // caso em que posi é 0 e (lst->elementos) > 1
   if (pos == 0){
-    *item = lst->prim->valor;
+    *item = lst->prim->id;
+    lst->prim->vivo = false;
 
-    aux = lst->prim->prox;
-    free (lst->prim);
-    lst->prim = aux;
-    lst->prim->ant = NULL;
-
-    lst->tamanho --;
-    return lst->tamanho;
+    lst->n_vivos --;
+    return item;
   }
 
   // caso em que eu quero retirar o último elemento e (lst->elementos) > 1
   if (pos == lst->tamanho-1) {
-    *item = lst->ult->valor;
+    *item = lst->ult->id;
+    lst->ult->vivo = false;
 
-    aux = lst->ult->ant;
-    free (lst->ult);
-    lst->ult = aux;
-    lst->ult->prox = NULL;
-
-    lst->tamanho --;
+    lst->n_vivos --;
     return lst->tamanho;
   }
 
@@ -160,30 +154,27 @@ int lista_retira (struct lista_t *lst, int *item, int pos) {
   for (int i=0; i<pos; i++) {
     aux = aux->prox;
   }
-  *item = aux->valor;
+  *item = aux->id;
+  aux->vivo = false;
 
-  // aqui eu estou fazendo com que o anterior e posterior ao aux se apontem
-  aux->prox->ant = aux->ant;
-  aux->ant->prox = aux->prox;
-  free (aux);
-
-  lst->tamanho --;
-  return lst->tamanho;
+  lst->n_vivos --;
+  return aux->id;
 }
 
 
-// Informa o valor do item na posição indicada, sem retirá-lo.
-// se a posição for além do fim da lista ou for -1, consulta do fim.
-// Retorno: número de itens na lista ou -1 em erro.
-int lista_consulta (struct lista_t *lst, int *item, int pos) {
+// Informa se o heroi está vivo ou morto na posição indicada, sem retirá-lo.
+// se a posição for -1, consulta do fim.
+// Retorno: número de herois vivos ou -1 em erro.
+// se a posição for além do fim retora erro, -1
+int lista_consulta (struct lista_t *lst, bool *vivo, int pos) {
   // if (lst == NULL || lst->tamanho<1)
   if (lst == NULL || lst->tamanho<1 || pos>lst->tamanho-1)
     return -1;
   
   // if (pos<0 || pos>lst->tamanho-1) {
   if (pos<0) {
-    *item = lst->ult->valor;
-    return lst->tamanho;
+    *vivo = lst->ult->vivo;
+    return lst->n_vivos;
   }
 
   struct item_t *aux = lst->prim;
@@ -191,23 +182,23 @@ int lista_consulta (struct lista_t *lst, int *item, int pos) {
     aux = aux->prox;
   }
 
-  *item = aux->valor;
-  return lst->tamanho;
+  *vivo = aux->vivo;
+  return lst->n_vivos;
 }
 
 
-// Informa a posição da 1ª ocorrência do valor indicado na lista.
-// Retorno: posição do valor ou -1 se não encontrar ou erro.
-int lista_procura (struct lista_t *lst, int valor) {
+// Informa a posição da 1ª ocorrência do id indicado na lista.
+// Retorno: posição do id ou -1 se não encontrar ou erro.
+int lista_procura (struct lista_t *lst, int id) {
   if (lst == NULL || lst->tamanho<1)
     return -1;
   
   struct item_t *aux = lst->prim;
   int i = 0;  
 
-  // enquanto nao achar o valor e I nao for maior que o tamanho da fila, vai iterando
+  // enquanto nao achar o id e I nao for maior que o tamanho da fila, vai iterando
   while (aux != NULL && i<=lst->tamanho-1) {
-    if (aux->valor == valor) {
+    if (aux->id == id) {
       return i;
     }
     aux = aux->prox;
@@ -232,12 +223,12 @@ void lista_imprime (struct lista_t *lst) {
   if (lst == NULL || lst->tamanho<1) {
     return;
   }  
-  printf ("%d", lst->prim->valor);
+  printf ("%d", lst->prim->id);
 
   struct item_t *aux = lst->prim;
   for (int i=1; i<lst->tamanho; i++) {      // começa do 1 por que a primeira posição já foi printada
     aux = aux->prox;
-    printf (" %d", aux->valor);
+    printf (" %d", aux->id);
   }
   return;
 }
